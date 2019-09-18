@@ -29,16 +29,34 @@ def train_pocket(train_x, train_y, num_iters):
 
     return None
 
+# return temple accessnet account
 def get_id():
+    return 'tug52339'
 
-    # TO-DO: add your code here
+def run_knn(sample_size, num_nn, train_x, train_y, test_x, test_y):
+    print("Sample Size [%d]\nNumber of Nearest Neighbors [%d]"
+          % (sample_size, num_nn))
 
-    return 'tuxddddd'
+    pred_y = test_knn(train_x, train_y, test_x, num_nn)
+    acc = compute_accuracy(test_y, pred_y)
+    
+    return None
+
+def run_pocket(sample_size, train_x, train_y, test_x, test_y):
+    print("Sample Size [%d]"
+          % (sample_size))
+    w = train_pocket(train_x, train_y, num_iters)
+    pred_y = test_pocket(w, test_x)
+    acc = compute_accuracy(test_y, pred_y)
+    
+    return None
+
 
 def main():
 
     # Read the data file
-    szDatasetPath = './letter-recognition.data' # Put this file in the same place as this script
+    # Put this file in the same place as this script
+    szDatasetPath = './letter-recognition.data' 
     listClasses = []
     listAttrs = []
     with open(szDatasetPath) as csvFile:
@@ -62,7 +80,28 @@ def main():
     testY = dataY[nNumTrainingExamples:]
 
     # TO-DO: add your code here
+    print(get_id())
 
+    # subsample sizes
+    num_train = {100, 1000, 2000, 5000, 10000, 15000}
+
+    # number of nearest neighbors for KNN
+    num_nn = {1, 3, 5, 7, 9}
+    
+    # KNN EXP
+    # Run through all 6 subsamples
+    for exp_num, sample_size in enumerate(num_train, 1):
+        print("\nKNN EXP [%d]" % exp_num)
+        # Run through all 5 KNN versions
+        for neighbors in num_nn:
+            run_knn(sample_size, neighbors, trainX, trainY, testX, testY)
+
+    # Pocket EXP
+    # Run through all 6 subsamples
+    for exp_num, num in enumerate(num_train, 1):
+        print("\nPocket EXP [%d]" % exp_num)
+        run_pocket(sample_size, trainX, trainY, testX, testY)
+    
     return None
 
 if __name__ == "__main__":
