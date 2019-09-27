@@ -4,11 +4,13 @@
 
 import csv
 import numpy as np
-import threading
+import heapq
+import time
 
 def compute_accuracy(test_y, pred_y):
     print("\tCOMPUTING ACCURACY...")
 
+    
     num_correct = 0.0
     for i in range(test_y.shape[0]):
         if(test_y[i] == pred_y[i]):
@@ -18,23 +20,29 @@ def compute_accuracy(test_y, pred_y):
 
 def test_knn(train_x, train_y, test_x, num_nn):
     print("\tTESTING KNN...")
-    
     pred_y = []
 
     for count, test in enumerate(test_x, 1):
         if(count % 1000 == 0):
             print("\tCount [" + str(count) + "]")
-        temp = []
 
-        for train in train_x:
+        max_heap = []
+        INDEX = 1
+        VAL = 0
+        for i, train in enumerate(train_x, 0):
             # compute euclidean distance between vects
-            temp.append(np.linalg.norm(test-train))
+            temp = (-1*np.linalg.norm(test-train), i)
+            if(i < num_nn):
+                # fill heap up to k items
+                heapq.heappush(max_heap, temp)
+            elif(max_heap[0] < temp):
+                # remove the largest item each iteration
+                heapq.heapreplace(max_heap, temp)
 
-        # convert distances to numpy array
-        arr = np.array(temp)
-
+        indices = []
         # find k mininum indices
-        indices = arr.argsort()[:num_nn]
+        for k in range(num_nn):
+            indices.append(heapq.heappop(max_heap)[INDEX])
 
         # find the n minimum classes
         classes = []
@@ -44,12 +52,12 @@ def test_knn(train_x, train_y, test_x, num_nn):
         # initialize array to count number of occurences of each class (26 classes)
         counts = [0]*26
 
+        # get a count of each class
         for class_a in classes:
             counts[class_a] += counts[class_a] + 1
 
         # get index of max count
         max = np.array(counts).argsort()[-1]
-
     
         pred_y.append(max)
             
@@ -129,23 +137,13 @@ def main():
     # KNN EXP
     # Run through all 6 subsamples
     for exp_num, sample_size in enumerate(num_train, 1):
+        start = time.time()
         print("\nKNN EXP [%d]" % exp_num)
         
-        # keep reference to the threads
-        threads = []
-        
         # Run through all 5 KNN versions
-        for thread_index, neighbors in enumerate(num_nn, 0):
-            # send required material to threads
-            threads.append(threading.Thread(target=run_knn,
-                                            args=(sample_size, neighbors, trainX[:sample_size],
-                                                  trainY[:sample_size], testX, testY)))
-            # start each thread
-            threads[thread_index].start()
-
-        # wait for all threads to complete
-        for thread in threads:
-            thread.join()
+        for neighbors in num_nn:
+            run_knn(sample_size, neighbors, trainX[:sample_size],trainY[:sample_size], testX, testY)
+        print("TOTAL TIME " + str(time.time()-start))
             
     #num_iters = 500
     # Pocket EXP
