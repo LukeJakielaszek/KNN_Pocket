@@ -4,18 +4,56 @@
 
 import csv
 import numpy as np
+import threading
 
 def compute_accuracy(test_y, pred_y):
+    print("COMPUTING ACCURACY...")
 
-    # TO-DO: add your code here
+    num_correct = 0.0
+    for i in range(test_y.shape[0]):
+        if(test_y[i] == pred_y[i]):
+            num_correct += 1.0
 
-    return None
+    return num_correct / test_y.shape[0]
 
 def test_knn(train_x, train_y, test_x, num_nn):
+    print("TESTING KNN...")
+    
+    pred_y = []
 
-    # TO-DO: add your code here
+    for count, test in enumerate(test_x, 1):
+        if(count % 250 == 0):
+            print("Count [" + str(count) + "]")
+        temp = []
 
-    return None
+        for train in train_x:
+            # compute euclidean distance between vects
+            temp.append(np.linalg.norm(test-train))
+
+        # convert distances to numpy array
+        arr = np.array(temp)
+
+        # find k mininum indices
+        indices = arr.argsort()[:num_nn]
+
+        # find the n minimum classes
+        classes = []
+        for index in indices:
+            classes.append(train_y[index])
+
+        # initialize array to count number of occurences of each class (26 classes)
+        counts = [0]*26
+
+        for class_a in classes:
+            counts[class_a] += counts[class_a] + 1
+
+        # get index of max count
+        max = np.array(counts).argsort()[-1]
+
+    
+        pred_y.append(max)
+            
+    return np.array(pred_y)
 
 def test_pocket(w, test_x):
 
@@ -25,8 +63,7 @@ def test_pocket(w, test_x):
 
 def train_pocket(train_x, train_y, num_iters):
 
-    # TO-DO: add your code here
-
+            
     return None
 
 # return temple accessnet account
@@ -34,15 +71,16 @@ def get_id():
     return 'tug52339'
 
 def run_knn(sample_size, num_nn, train_x, train_y, test_x, test_y):
+    pred_y = test_knn(train_x, train_y, test_x, num_nn)
+
+    acc = compute_accuracy(test_y, pred_y)
+    
     print("Sample Size [%d]\nNumber of Nearest Neighbors [%d]"
           % (sample_size, num_nn))
 
-    pred_y = test_knn(train_x, train_y, test_x, num_nn)
-    acc = compute_accuracy(test_y, pred_y)
-    
-    return None
+    print(acc)
 
-def run_pocket(sample_size, train_x, train_y, test_x, test_y):
+def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
     print("Sample Size [%d]"
           % (sample_size))
     w = train_pocket(train_x, train_y, num_iters)
@@ -79,7 +117,7 @@ def main():
     testX = dataX[nNumTrainingExamples:, :]
     testY = dataY[nNumTrainingExamples:]
 
-    # TO-DO: add your code here
+    # print tug52339
     print(get_id())
 
     # subsample sizes
@@ -92,15 +130,30 @@ def main():
     # Run through all 6 subsamples
     for exp_num, sample_size in enumerate(num_train, 1):
         print("\nKNN EXP [%d]" % exp_num)
+        
+        # keep reference to the threads
+        threads = []
+        
         # Run through all 5 KNN versions
-        for neighbors in num_nn:
-            run_knn(sample_size, neighbors, trainX, trainY, testX, testY)
+        for thread_index, neighbors in enumerate(num_nn, 0):
+            # send required material to threads
+            threads.append(threading.Thread(target=run_knn,
+                                            args=(sample_size, neighbors, trainX[:sample_size],
+                                                  trainY[:sample_size], testX, testY)))
+            # start each thread
+            threads[thread_index].start()
 
+        # wait for all threads to complete
+        for thread in threads:
+            thread.join()
+            
+    #num_iters = 500
     # Pocket EXP
     # Run through all 6 subsamples
-    for exp_num, num in enumerate(num_train, 1):
-        print("\nPocket EXP [%d]" % exp_num)
-        run_pocket(sample_size, trainX, trainY, testX, testY)
+    #for exp_num, num in enumerate(num_train, 1):
+    #    print("\nPocket EXP [%d]" % exp_num)
+    #    run_pocket(sample_size, trainX[:sample_size], trainY[:sample_size],
+    #               testX, testY, num_iters)
     
     return None
 
