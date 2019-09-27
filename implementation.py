@@ -21,10 +21,9 @@ def compute_accuracy(test_y, pred_y):
 def test_knn(train_x, train_y, test_x, num_nn):
     print("\tTESTING KNN...")
     pred_y = []
-
     for count, test in enumerate(test_x, 1):
         if(count % 1000 == 0):
-            print("\tCount [" + str(count) + "]")
+            print("\tTest Samples Processed [" + str(count) + "]")
 
         max_heap = []
         INDEX = 1
@@ -42,24 +41,24 @@ def test_knn(train_x, train_y, test_x, num_nn):
         indices = []
         # find k mininum indices
         for k in range(num_nn):
-            indices.append(heapq.heappop(max_heap)[INDEX])
+            indices.append(heapq.heappop(max_heap))
 
         # find the n minimum classes
         classes = []
         for index in indices:
-            classes.append(train_y[index])
+            classes.append([-1*index[VAL], train_y[index[INDEX]]])
 
         # initialize array to count number of occurences of each class (26 classes)
         counts = [0]*26
 
         # get a count of each class
         for class_a in classes:
-            counts[class_a] += counts[class_a] + 1
+            counts[class_a[INDEX]] += counts[class_a[INDEX]] + class_a[VAL]
 
         # get index of max count
-        max = np.array(counts).argsort()[-1]
-    
-        pred_y.append(max)
+        max_a = np.array(counts).argsort()[-1]
+
+        pred_y.append(max_a)
             
     return np.array(pred_y)
 
@@ -129,10 +128,10 @@ def main():
     print(get_id())
 
     # subsample sizes
-    num_train = {100, 1000, 2000, 5000, 10000, 15000}
+    num_train = [100, 1000, 2000, 5000, 10000, 15000]
 
     # number of nearest neighbors for KNN
-    num_nn = {1, 3, 5, 7, 9}
+    num_nn = [1, 3, 5, 7, 9]
     
     # KNN EXP
     # Run through all 6 subsamples
