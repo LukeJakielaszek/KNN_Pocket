@@ -7,7 +7,7 @@ import numpy as np
 import threading
 
 def compute_accuracy(test_y, pred_y):
-    print("COMPUTING ACCURACY...")
+    print("\tCOMPUTING ACCURACY...")
 
     num_correct = 0.0
     for i in range(test_y.shape[0]):
@@ -17,13 +17,13 @@ def compute_accuracy(test_y, pred_y):
     return num_correct / test_y.shape[0]
 
 def test_knn(train_x, train_y, test_x, num_nn):
-    print("TESTING KNN...")
+    print("\tTESTING KNN...")
     
     pred_y = []
 
     for count, test in enumerate(test_x, 1):
-        if(count % 250 == 0):
-            print("Count [" + str(count) + "]")
+        if(count % 1000 == 0):
+            print("\tCount [" + str(count) + "]")
         temp = []
 
         for train in train_x:
@@ -75,10 +75,10 @@ def run_knn(sample_size, num_nn, train_x, train_y, test_x, test_y):
 
     acc = compute_accuracy(test_y, pred_y)
     
-    print("Sample Size [%d]\nNumber of Nearest Neighbors [%d]"
+    print("\t\tSample Size [%d]\n\t\tNumber of Nearest Neighbors [%d]"
           % (sample_size, num_nn))
 
-    print(acc)
+    print("\t\tAccuracy [" + str(acc) + "]")
 
 def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
     print("Sample Size [%d]"
