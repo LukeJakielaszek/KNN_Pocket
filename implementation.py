@@ -87,6 +87,8 @@ def run_knn(sample_size, num_nn, train_x, train_y, test_x, test_y):
 
     print("\t\tAccuracy [" + str(acc) + "]")
 
+    compute_confusion_matrix(test_y, pred_y)
+    
 def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
     print("Sample Size [%d]"
           % (sample_size))
@@ -96,7 +98,20 @@ def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
     
     return None
 
+def compute_confusion_matrix(test_y, pred_y):
+    cm = np.zeros((26,26), dtype=int)
 
+    for test, pred in zip(test_y, pred_y):
+        cm[pred][test] += 1
+
+    print("\tTrue")
+    print("Predicted")
+    for line in cm:
+        print("\t", end="")
+        for count in line:
+            print("%5d" % (count), end=" ")
+        print()
+        
 def main():
 
     # Read the data file
