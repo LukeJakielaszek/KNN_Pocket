@@ -6,6 +6,7 @@ import csv
 import numpy as np
 import heapq
 import time
+import random
 
 def compute_accuracy(test_y, pred_y):
     print("\tCOMPUTING ACCURACY...")
@@ -62,28 +63,46 @@ def test_knn(train_x, train_y, test_x, num_nn):
             
     return np.array(pred_y)
 
-def test_pocket(w, test_x):
+def test_pocket(all_w, all_bias, test_x):
+    # Store all processed predictions
+    pred_y = np.zeros(test_x.shape[0], dtype=int)
+    
+    for j, sample in enumerate(test_x, 0):
+        # store each OVA prediction
+        predictions = np.empty(26)
+        
+        for i in range(26):
+            # predict the class of our training sample
+            predictions[i] = np.dot(all_w[i], test_x[j]) + all_bias[i]
 
-    # TO-DO: add your code here
+        # get index of most confident prediction
+        pred_y[j] = predictions.argsort()[-1]
 
-    return None
+    return pred_y
 
 def train_pocket(train_x, train_y, num_iters):
     # weight vector is 16 long to match our features
-    w = np.empty(train_x.shape[1],)
-
+    # initialize to random values
+    w = np.random.rand(train_x.shape[1],)
+    bias = random.random()
     # number of iterations to perform
     for i in range(num_iters):
         # run until a misclassified point is found
         for i in range(train_y.shape[0]):
-            # update weight vector when a misclassified point was identified
-            if(train_x[i] * w * train_y[i] > 0):
-                w = w + train_x[i]*train_y[i]
-                break
-            exit()
+            # predict the class of our training sample
+            prediction = np.sign(np.dot(w, train_x[i]) + bias)*train_y[i]
 
-    exit()
-    return w
+            # update weight vector when a misclassified point was identified
+            if(prediction < 0):
+                # update our weights
+                w = w + train_x[i]*train_y[i]
+
+                # update our bias
+                bias += prediction
+                break
+
+    # return our weight vector and bias
+    return (w, bias)
 
 # return temple accessnet account
 def get_id():
@@ -105,7 +124,8 @@ def run_knn(sample_size, num_nn, train_x, train_y, test_x, test_y):
 def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
     print("Sample Size [%d]" % (sample_size))
 
-    all_w = np.empty(shape=(26,2))
+    all_w = np.empty(shape=(26,16))
+    all_bias = np.empty(shape=(26,))
     
     for i in range(26):
         # vector to store labels in a OVA format
@@ -117,13 +137,17 @@ def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
                 ova_labels[index] = 1
             else:
                 ova_labels[index] = -1
-        
-        all_w[i] = train_pocket(train_x, ova_labels, num_iters)
 
-    exit()
-    pred_y = test_pocket(w, test_x)
+        all_w[i], all_bias[i] = train_pocket(train_x, ova_labels, num_iters)
+
+    pred_y = test_pocket(all_w, all_bias, test_x)
+
     acc = compute_accuracy(test_y, pred_y)
-    
+
+    print(acc)
+
+    compute_confusion_matrix(test_y, pred_y)
+
     return None
 
 def compute_confusion_matrix(test_y, pred_y):
@@ -194,7 +218,7 @@ def main():
         print("\nPocket EXP [%d]" % exp_num)
 
         run_pocket(sample_size, trainX[:sample_size], trainY[:sample_size],
-                   testX, testY, sample_size)
+                   testX, testY, sample_size*2)
         print("TOTAL TIME " + str(time.time()-start))        
     return None
 
