@@ -69,9 +69,21 @@ def test_pocket(w, test_x):
     return None
 
 def train_pocket(train_x, train_y, num_iters):
+    # weight vector is 16 long to match our features
+    w = np.empty(train_x.shape[1],)
 
-            
-    return None
+    # number of iterations to perform
+    for i in range(num_iters):
+        # run until a misclassified point is found
+        for i in range(train_y.shape[0]):
+            # update weight vector when a misclassified point was identified
+            if(train_x[i] * w * train_y[i] > 0):
+                w = w + train_x[i]*train_y[i]
+                break
+            exit()
+
+    exit()
+    return w
 
 # return temple accessnet account
 def get_id():
@@ -88,11 +100,27 @@ def run_knn(sample_size, num_nn, train_x, train_y, test_x, test_y):
     print("\t\tAccuracy [" + str(acc) + "]")
 
     compute_confusion_matrix(test_y, pred_y)
-    
+
+# implement OVA pocket algorithm
 def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
-    print("Sample Size [%d]"
-          % (sample_size))
-    w = train_pocket(train_x, train_y, num_iters)
+    print("Sample Size [%d]" % (sample_size))
+
+    all_w = np.empty(shape=(26,2))
+    
+    for i in range(26):
+        # vector to store labels in a OVA format
+        ova_labels = np.empty(shape=(train_y.shape[0],))
+
+        # process our label vector into OVA format for each class
+        for index, class_a in enumerate(train_y, 0):
+            if class_a == i:
+                ova_labels[index] = 1
+            else:
+                ova_labels[index] = -1
+        
+        all_w[i] = train_pocket(train_x, ova_labels, num_iters)
+
+    exit()
     pred_y = test_pocket(w, test_x)
     acc = compute_accuracy(test_y, pred_y)
     
@@ -150,23 +178,24 @@ def main():
     
     # KNN EXP
     # Run through all 6 subsamples
-    for exp_num, sample_size in enumerate(num_train, 1):
-        start = time.time()
-        print("\nKNN EXP [%d]" % exp_num)
+    #for exp_num, sample_size in enumerate(num_train, 1):
+    #    start = time.time()
+    #    print("\nKNN EXP [%d]" % exp_num)
         
         # Run through all 5 KNN versions
-        for neighbors in num_nn:
-            run_knn(sample_size, neighbors, trainX[:sample_size],trainY[:sample_size], testX, testY)
-        print("TOTAL TIME " + str(time.time()-start))
+    #    for neighbors in num_nn:
+    #        run_knn(sample_size, neighbors, trainX[:sample_size],trainY[:sample_size], testX, testY)
+    #    print("TOTAL TIME " + str(time.time()-start))
             
-    #num_iters = 500
     # Pocket EXP
     # Run through all 6 subsamples
-    #for exp_num, num in enumerate(num_train, 1):
-    #    print("\nPocket EXP [%d]" % exp_num)
-    #    run_pocket(sample_size, trainX[:sample_size], trainY[:sample_size],
-    #               testX, testY, num_iters)
-    
+    for exp_num, sample_size in enumerate(num_train, 1):
+        start = time.time()
+        print("\nPocket EXP [%d]" % exp_num)
+
+        run_pocket(sample_size, trainX[:sample_size], trainY[:sample_size],
+                   testX, testY, sample_size)
+        print("TOTAL TIME " + str(time.time()-start))        
     return None
 
 if __name__ == "__main__":
