@@ -171,9 +171,10 @@ def train_pocket(train_x, train_y, num_iters):
                     ova_labels[index] = -1
 
 
-            # update our weight values
-            all_w[i], all_bias[i] = update_pocket_weights(train_x, ova_labels,
-                                                          all_w[i], all_bias[i])
+            for j in range(50):
+                # update our weight values
+                all_w[i], all_bias[i] = update_pocket_weights(train_x, ova_labels,
+                                                              all_w[i], all_bias[i])
 
         # check if performance improved
         pred_y = test_pocket(all_w, all_bias, train_x)
@@ -184,22 +185,23 @@ def train_pocket(train_x, train_y, num_iters):
             # rollback weights
             all_w = np.copy(prev_w)
             all_bias = np.copy(prev_bias)
-
-            # equally shuffle both arrays to ensure new weights are found
-            perm = permutation(len(train_x))
-            
-            train_x = train_x[perm]
-            train_y = train_y[perm]
         else:
             # current model is better
             # update our baseline performance
             prev_w = np.copy(all_w)
             prev_bias = np.copy(all_bias)
             prev_acc = acc
-            print("Iteration [" + str(cur_iter) + "] Accuracy [" + str(prev_acc) + "]")
+            print("Iteration [" + str(cur_iter) + "] CLOSED Accuracy [" + str(prev_acc) + "]")
             
             # count our successful iteration
-            cur_iter += 1        
+            cur_iter += 1
+
+        # equally shuffle both arrays to ensure new weights are found
+        perm = permutation(len(train_x))
+        
+        train_x = train_x[perm]
+        train_y = train_y[perm]
+
     return(all_w, all_bias)
 
 def update_pocket_weights(train_x, train_y, w, bias):
@@ -494,7 +496,7 @@ def main():
         print("\nPocket EXP [%d]" % exp_num)
 
         run_pocket(sample_size, trainX[:sample_size], trainY[:sample_size],
-                   testX, testY, 26*sample_size)
+                   testX, testY, 6)
         print("TOTAL TIME " + str(time.time()-start))        
     return None
 
