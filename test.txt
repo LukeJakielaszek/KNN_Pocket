@@ -1,0 +1,34 @@
+tug52339
+
+Pocket EXP [1]
+Sample Size [100]
+updating weights [1] Accuracy [1] Prev Accuracy [0]
+updating weights [2] Accuracy [8] Prev Accuracy [1]
+Rolling weights back [3] Sample Accuracy [8] Prev Accuracy [8]
+updating weights [3] Accuracy [86] Prev Accuracy [8]
+Rolling weights back [4] Sample Accuracy [86] Prev Accuracy [86]
+Rolling weights back [5] Sample Accuracy [6] Prev Accuracy [86]
+Rolling weights back [5] Sample Accuracy [17] Prev Accuracy [86]
+updating weights [5] Accuracy [98] Prev Accuracy [86]
+Rolling weights back [6] Sample Accuracy [11] Prev Accuracy [98]
+Rolling weights back [6] Sample Accuracy [41] Prev Accuracy [98]
+Rolling weights back [6] Sample Accuracy [57] Prev Accuracy [98]
+Rolling weights back [7] Sample Accuracy [38] Prev Accuracy [98]
+Rolling weights back [7] Sample Accuracy [42] Prev Accuracy [98]
+Rolling weights back [7] Sample Accuracy [52] Prev Accuracy [98]
+Rolling weights back [7] Sample Accuracy [71] Prev Accuracy [98]
+Rolling weights back [8] Sample Accuracy [15] Prev Accuracy [98]
+Rolling weights back [8] Sample Accuracy [45] Prev Accuracy [98]
+[[ 4.  5.  5. ...  8.  3.  8.]
+ [ 8. 10.  8. ...  6.  7.  7.]
+ [ 4.  6.  7. ...  8.  4.  9.]
+ ...
+ [ 3.  3.  4. ...  8.  3.  7.]
+ [ 4.  5.  5. ...  8.  6. 11.]
+ [ 3.  2.  3. ...  8.  9.  8.]]
+[-1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.
+ -1. -1. -1. -1.  1. -1. -1. -1. -1. -1. -1. -1.  1. -1. -1. -1. -1. -1.
+ -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.
+ -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.
+ -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.
+ -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.]

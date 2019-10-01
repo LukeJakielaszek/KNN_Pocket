@@ -7,11 +7,9 @@ import numpy as np
 import heapq
 import time
 import random
+from numpy.random import permutation
 
 def compute_accuracy(test_y, pred_y):
-    print("\tCOMPUTING ACCURACY...")
-
-    
     num_correct = 0.0
     for i in range(test_y.shape[0]):
         if(test_y[i] == pred_y[i]):
@@ -77,9 +75,20 @@ def test_pocket(all_w, all_bias, test_x):
 
         # get index of most confident prediction
         pred_y[j] = predictions.argsort()[-1]
+        
+    return pred_y
+
+def test_pocket_single(w, bias, test_x):
+    # Store all processed predictions
+    pred_y = np.zeros(test_x.shape[0], dtype=int)
+    
+    for j, sample in enumerate(test_x, 0):
+        # predict the class of our training sample
+        pred_y[j] = np.sign(np.dot(w, test_x[j]) + bias)
 
     return pred_y
 
+"""
 def train_pocket(train_x, train_y, num_iters):
     # weight vector is 16 long to match our features
     # initialize to random values
@@ -88,21 +97,147 @@ def train_pocket(train_x, train_y, num_iters):
     # number of iterations to perform
     for i in range(num_iters):
         # run until a misclassified point is found
-        for i in range(train_y.shape[0]):
+        for j in range(train_y.shape[0]):
             # predict the class of our training sample
-            prediction = np.sign(np.dot(w, train_x[i]) + bias)*train_y[i]
-
+            prediction = np.sign(np.dot(w, train_x[j]) + bias)*train_y[j]
+            
             # update weight vector when a misclassified point was identified
             if(prediction < 0):
                 # update our weights
-                w = w + train_x[i]*train_y[i]
-
+                w = w + train_x[j]*train_y[j]
+                
                 # update our bias
                 bias += prediction
                 break
 
     # return our weight vector and bias
     return (w, bias)
+"""
+
+def train_pocket(train_x, train_y, num_iters):
+    # weight vector is 16 long to match our features
+    # initialize to random values
+    w = np.random.rand(train_x.shape[1],)
+    bias = random.random()
+
+    # get baseline accuracy
+    preds_y = test_pocket_single(w, bias, train_x)
+    prev_acc = compute_accuracy(train_y, preds_y)
+    prev_w = None
+    prev_bias = None
+
+    # number of iterations to perform
+    for i in range(num_iters):
+        if((i+1) % 5 == 0):
+            print("ITERATION [" + str(i+1) + "]")
+
+        # run until a misclassified point is found
+        for j in range(train_y.shape[0]):
+            # predict the class of our training sample
+            prediction = np.sign(np.dot(w, train_x[j]) + bias)*train_y[j]
+            
+            # update weight vector when a misclassified point was identified
+            if(prediction < 0):
+                # store old weights
+                prev_w = np.copy(w)
+                prev_bias = bias
+                
+                # update our weights
+                w = w + train_x[j]*train_y[j]
+                # update our bias
+                bias += prediction
+
+                # get updated accuracy
+                preds_y = test_pocket_single(w, bias, train_x)
+                acc = compute_accuracy(train_y, preds_y)
+
+                if(prev_acc < acc):
+                    prev_acc = acc
+                    # better model
+                    prev_w = np.copy(w)
+                    prev_bias = bias
+                    break
+                else:
+                    # worse model continue looking
+                    w = np.copy(prev_w)
+                    bias = prev_bias
+
+    print("OVA Accuracy : ", prev_acc)
+    # return our weight vector and bias
+    return (w, bias)
+
+"""
+def train_pocket(train_x, train_y, num_iters):
+    # weight vector is 16 long to match our features
+    # initialize to random values
+    w = np.random.rand(train_x.shape[1],)
+    bias = random.random()
+
+    # store previous weights and accuracy
+    prev_weights = np.copy(w)
+    prev_bias = bias
+    prev_accuracy = 0    
+
+    i = 0
+    # number of iterations to perform
+    while(i < num_iters):
+        i +=1
+        # determines goodness of our current model
+        sample_accuracy = 0
+        
+        # run until a misclassified point is found
+        for j in range(train_y.shape[0]):
+
+            # increment accuracy count
+            sample_accuracy += 1
+            
+            # predict the class of our training sample
+            prediction = np.sign(np.dot(w, train_x[j]) + bias)*train_y[j]
+
+            # update or roll back weight vector when a misclassified point was identified
+            if(prediction < 0):
+                if(sample_accuracy > prev_accuracy):
+                    print("updating weights [" + str(i) +
+                          "] Accuracy [" + str(sample_accuracy) + "]"
+                          + " Prev Accuracy [" + str(prev_accuracy) + "]")
+                    # update our memory
+                    prev_weights = np.copy(w)
+                    prev_bias = bias
+
+                    print(w)
+
+                    # update our weights
+                    w = w + train_x[j]*train_y[j]
+                  
+                    # update our bias
+                    bias += prediction
+
+                    # update our accuracy
+                    prev_accuracy = sample_accuracy
+                else:
+                    print("Rolling weights back [" + str(i) +
+                          "] Sample Accuracy [" + str(sample_accuracy) + "]" +
+                          " Prev Accuracy [" + str(prev_accuracy) + "]")
+                    # rollback our weights
+                    w = np.copy(prev_weights)
+                    bias = prev_bias
+
+                    # equally shuffle both arrays to ensure a new point of failure is found
+                    perm = permutation(len(train_x))
+
+                    train_x = train_x[perm]
+                    train_y = train_y[perm]
+                break
+
+    print("FINISH [" + str(i) +
+              "] Sample Accuracy [" + str(sample_accuracy) + "]" +
+              " Prev Accuracy [" + str(prev_accuracy) + "]")
+
+    print(w)
+    exit()
+    # return our weight vector and bias
+    return (w, prev_bias)
+"""
 
 # return temple accessnet account
 def get_id():
@@ -119,14 +254,14 @@ def run_knn(sample_size, num_nn, train_x, train_y, test_x, test_y):
     print("\t\tAccuracy [" + str(acc) + "]")
 
     compute_confusion_matrix(test_y, pred_y)
-
+    
 # implement OVA pocket algorithm
 def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
     print("Sample Size [%d]" % (sample_size))
 
     all_w = np.empty(shape=(26,16))
     all_bias = np.empty(shape=(26,))
-    
+
     for i in range(26):
         # vector to store labels in a OVA format
         ova_labels = np.empty(shape=(train_y.shape[0],))
@@ -148,6 +283,7 @@ def run_pocket(sample_size, train_x, train_y, test_x, test_y, num_iters):
 
     compute_confusion_matrix(test_y, pred_y)
 
+    
     return None
 
 def compute_confusion_matrix(test_y, pred_y):
@@ -218,7 +354,7 @@ def main():
         print("\nPocket EXP [%d]" % exp_num)
 
         run_pocket(sample_size, trainX[:sample_size], trainY[:sample_size],
-                   testX, testY, sample_size*2)
+                   testX, testY, 10)
         print("TOTAL TIME " + str(time.time()-start))        
     return None
 
